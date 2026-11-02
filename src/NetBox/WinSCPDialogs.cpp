@@ -2294,7 +2294,7 @@ bool TCleanupDialog::ConfirmCleanup()
   CancelAlias.Button = qaCancel;
   CancelAlias.Alias = GetMsg(MSG_BUTTON_Cancel);
   CancelAlias.Default = true;
-  TMessageParams Params(0);
+  TMessageParams Params(0U);
   Params.Aliases = &CancelAlias;
   Params.AliasesCount = 1;
 
