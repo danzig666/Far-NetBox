@@ -84,6 +84,28 @@ THierarchicalStorage * TFarConfiguration::CreateScpStorage(bool & SessionList)
   return Storage;
 }
 
+// Settings live in the Far plugin database, not in the registry the base class looks at
+void TFarConfiguration::CleanupRegistry(const UnicodeString & RegistryPath)
+{
+  std::unique_ptr<THierarchicalStorage> Storage(CreateConfigStorage());
+  Storage->SetAccessMode(smReadWrite);
+  Storage->SetExplicit(true);
+  const UnicodeString ParentKey = ExtractFileDir(RegistryPath);
+  if (ParentKey.IsEmpty() || Storage->OpenSubKeyPath(ParentKey, false))
+  {
+    Storage->RecursiveDeleteSubKey(base::ExtractFileName(RegistryPath, false));
+  }
+}
+
+bool TFarConfiguration::RegistryPathExists(const UnicodeString & RegistryPath) const
+{
+  std::unique_ptr<THierarchicalStorage> Storage(const_cast<TFarConfiguration *>(this)->CreateConfigStorage());
+  const UnicodeString ParentKey = ExtractFileDir(RegistryPath);
+  return
+    (ParentKey.IsEmpty() || Storage->OpenSubKeyPath(ParentKey, false)) &&
+    Storage->KeyExists(base::ExtractFileName(RegistryPath, false));
+}
+
 void TFarConfiguration::Saved()
 {
   TGUIConfiguration::Saved();

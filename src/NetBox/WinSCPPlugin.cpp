@@ -780,6 +780,14 @@ void TWinSCPPlugin::CommandsMenu(bool FromFileSystem)
     else if (Result == MCleanup)
     {
       CleanupDialog();
+      if ((WinSCPFileSystem != nullptr) && WinSCPFileSystem->IsSessionList() && WinSCPFileSystem->UpdatePanel())
+      {
+        WinSCPFileSystem->RedrawPanel();
+      }
+      if ((AnotherFileSystem != nullptr) && AnotherFileSystem->IsSessionList() && AnotherFileSystem->UpdatePanel(false, true))
+      {
+        AnotherFileSystem->RedrawPanel(true);
+      }
     }
     else if (Result == MGenerateUrl)
     {

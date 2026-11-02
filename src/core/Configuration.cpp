@@ -1017,7 +1017,7 @@ void TConfiguration::CleanupConfiguration()
   try
   {
     CleanupRegistry(GetConfigurationSubKey());
-    if (GetStorage() == stRegistry)
+    if ((GetStorage() == stRegistry) || (GetStorage() == stFar3Storage))
     {
       FDontSave = true;
     }

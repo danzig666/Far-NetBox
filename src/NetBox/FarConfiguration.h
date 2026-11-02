@@ -26,6 +26,8 @@ public:
   void SaveFarConfiguration(bool All, bool Explicit);
   virtual void Default() override;
   virtual THierarchicalStorage * CreateScpStorage(bool & SessionList) override;
+  virtual void CleanupRegistry(const UnicodeString & RegistryPath) override;
+  virtual bool RegistryPathExists(const UnicodeString & RegistryPath) const override;
   void CacheFarSettings();
 
   const TCustomFarPlugin * GetPlugin() const { return FFarPlugin; }

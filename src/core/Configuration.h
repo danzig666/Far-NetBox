@@ -259,7 +259,7 @@ public:
   void LoadSshHostCAList(TSshHostCAList * SshHostCAList, THierarchicalStorage * AStorage);
   virtual UnicodeString GetDefaultKeyFile() const;
   virtual void Saved();
-  void CleanupRegistry(const UnicodeString & RegistryPath);
+  virtual void CleanupRegistry(const UnicodeString & RegistryPath);
   void CopyAllStringsInSubKey(
     THierarchicalStorage * Source, THierarchicalStorage * Target, const UnicodeString & Name);
   bool CopySubKey(THierarchicalStorage * Source, THierarchicalStorage * Target, const UnicodeString & Name);
@@ -368,7 +368,7 @@ public:
   UnicodeString GetFileDescription(const UnicodeString & AFileName) const;
   UnicodeString GetFileVersion(const UnicodeString & AFileName) const;
   UnicodeString GetFileMimeType(const UnicodeString & AFileName) const;
-  bool RegistryPathExists(const UnicodeString & RegistryPath) const;
+  virtual bool RegistryPathExists(const UnicodeString & RegistryPath) const;
   bool HasLocalPortNumberLimits() const;
   virtual UnicodeString TemporaryDir(bool Mask = false) const = 0;
   UnicodeString GetVersionStrHuman();

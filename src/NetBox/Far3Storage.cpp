@@ -147,9 +147,11 @@ int32_t TFar3Storage::DoBinaryDataSize(const UnicodeString & Name)
 
 bool TFar3Storage::DoKeyExists(const UnicodeString & SubKey, bool ForceAnsi)
 {
-  DebugUsedParam(ForceAnsi);
-  const UnicodeString K = PuttyMungeStr(SubKey);
-  const bool Result = FPluginSettings.ValueExists(FRoot, K.c_str());
+  const UnicodeString K = ForceAnsi ? PuttyMungeStr(SubKey) : MungeKeyName(SubKey);
+  // Raw key name is written by old versions, see THierarchicalStorage::OpenSubKey
+  const bool Result =
+    (FPluginSettings.OpenSubKey(FRoot, K.c_str()) != 0) ||
+    (FPluginSettings.OpenSubKey(FRoot, SubKey.c_str()) != 0);
   return Result;
 }
 

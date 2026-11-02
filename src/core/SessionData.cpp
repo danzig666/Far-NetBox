@@ -5921,22 +5921,7 @@ void TStoredSessionList::Cleanup()
     {
       Clear();
     }
-    std::unique_ptr<TRegistryStorage> Storage(std::make_unique<TRegistryStorage>(GetConfiguration()->GetRegistryStorageKey()));
-    Storage->Init();
-    try__finally
-    {
-      Storage->SetAccessMode(smReadWrite);
-      if (Storage->OpenRootKey(False))
-      {
-        Storage->RecursiveDeleteSubKey(GetConfiguration()->GetStoredSessionsSubKey());
-      }
-    }
-    __finally__removed
-    {
-#if defined(__BORLANDC__)
-      delete Storage;
-#endif // defined(__BORLANDC__)
-    } end_try__finally
+    GetConfiguration()->CleanupRegistry(GetConfiguration()->GetStoredSessionsSubKey());
   }
   catch(Exception & E)
   {

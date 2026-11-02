@@ -605,6 +605,11 @@ bool TWinSCPFileSystem::GetFindDataEx(TObjectList * PanelItems, OPERATION_MODES 
       {
         GetStoredSessions()->Load(Storage.get());
       }
+      else
+      {
+        // The whole sessions key is gone after cleanup
+        GetStoredSessions()->Clear();
+      }
     }
     UnicodeString Folder = FSessionsFolder;
     if (!FSessionsFolder.IsEmpty())

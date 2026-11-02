@@ -431,14 +431,28 @@ bool THierarchicalStorage::OpenSubKey(const UnicodeString & ASubKey, bool CanCre
   {
     Access = hsaRead; // allow reading the access
     InheritAccess = GetCurrentAccess();
+    // Look for any existing spelling of the key before creating one,
+    // otherwise saving a session stored under a legacy name would duplicate it
     MungedKey = MungeStr(ASubKey, GetForceAnsi(), false);
-    Result = DoOpenSubKey(MungedKey, CanCreate);
+    Result = DoOpenSubKey(MungedKey, false);
     if (!Result)
     {
-      MungedKey = MungeStr(ASubKey, !GetForceAnsi(), false);
-      Result = DoOpenSubKey(MungedKey, CanCreate);
-      if (!Result)
-        Result = DoOpenSubKey(ASubKey, CanCreate);
+      const UnicodeString AltMungedKey = MungeStr(ASubKey, !GetForceAnsi(), false);
+      Result = DoOpenSubKey(AltMungedKey, false);
+      if (Result)
+      {
+        MungedKey = AltMungedKey;
+      }
+      // When creating, raw "a%20b" is key of another session "a b", it must not be overwritten
+      else if ((!CanCreate || (UnMungeStr(ASubKey) == ASubKey)) && DoOpenSubKey(ASubKey, false))
+      {
+        Result = true;
+        MungedKey = ASubKey;
+      }
+      else if (CanCreate)
+      {
+        Result = DoOpenSubKey(MungedKey, true);
+      }
     }
   }
 
