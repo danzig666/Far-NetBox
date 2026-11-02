@@ -2110,12 +2110,14 @@ protected:
 
 private:
   void UpdateControls();
+  bool ConfirmCleanup();
   void SelectAllButtonClick(TFarButton * Sender, bool & Close);
   void DeselectAllButtonClick(TFarButton * Sender, bool & Close);
 
   struct TCleanupItem
   {
     int32_t CaptionId;
+    int32_t ConfirmId{0};
     UnicodeString Location;
     std::function<void()> CleanupEvent;
   };
@@ -2136,6 +2138,7 @@ TCleanupDialog::TCleanupDialog(TCustomFarPlugin * AFarPlugin) :
   {
     TCleanupItem Item;
     Item.CaptionId = NB_CLEANUP_CONFIG;
+    Item.ConfirmId = NB_CLEANUP_CONFIRM_CONFIG;
     Item.Location = Configuration->GetRegistryStorageKey() + L"\\" + Configuration->ConfigurationSubKey;
     Item.CleanupEvent = [Configuration]() { Configuration->CleanupConfiguration(); };
     FCleanupItems.push_back(Item);
@@ -2146,6 +2149,7 @@ TCleanupDialog::TCleanupDialog(TCustomFarPlugin * AFarPlugin) :
   {
     TCleanupItem Item;
     Item.CaptionId = NB_CLEANUP_SESSIONS;
+    Item.ConfirmId = NB_CLEANUP_CONFIRM_SESSIONS;
     Item.Location = Configuration->GetRegistryStorageKey() + L"\\" + Configuration->StoredSessionsSubKey;
     Item.CleanupEvent = []() { GetStoredSessions()->Cleanup(); };
     FCleanupItems.push_back(Item);
@@ -2156,6 +2160,7 @@ TCleanupDialog::TCleanupDialog(TCustomFarPlugin * AFarPlugin) :
   {
     TCleanupItem Item;
     Item.CaptionId = NB_CLEANUP_CACHES;
+    Item.ConfirmId = NB_CLEANUP_CONFIRM_CACHES;
     Item.Location = L"...";
     Item.CleanupEvent = [Configuration]() { Configuration->CleanupCaches(); };
     FCleanupItems.push_back(Item);
@@ -2272,6 +2277,33 @@ void TCleanupDialog::UpdateControls()
     OkButton->SetEnabled(AnyChecked);
 }
 
+bool TCleanupDialog::ConfirmCleanup()
+{
+  std::unique_ptr<TStrings> Items(std::make_unique<TStringList>());
+  for (int32_t Index = 0; Index < static_cast<int32_t>(FCheckBoxes.size()); Index++)
+  {
+    if (FCheckBoxes[Index]->GetChecked())
+    {
+      const TCleanupItem & Item = FCleanupItems[Index];
+      Items->Add((Item.ConfirmId != 0) ? GetMsg(Item.ConfirmId) : StripHotkey(GetMsg(Item.CaptionId)));
+    }
+  }
+
+  // Cleanup cannot be undone, so stray Enter must not confirm it
+  TQueryButtonAlias CancelAlias;
+  CancelAlias.Button = qaCancel;
+  CancelAlias.Alias = GetMsg(MSG_BUTTON_Cancel);
+  CancelAlias.Default = true;
+  TMessageParams Params(0);
+  Params.Aliases = &CancelAlias;
+  Params.AliasesCount = 1;
+
+  TWinSCPPlugin * WinSCPPlugin = nb::dyn_cast_or_null<TWinSCPPlugin>(FarPlugin);
+  return
+    (WinSCPPlugin != nullptr) &&
+    (WinSCPPlugin->MoreMessageDialog(GetMsg(NB_CLEANUP_CONFIRM), Items.get(), qtWarning, qaOK | qaCancel, &Params) == qaOK);
+}
+
 bool TCleanupDialog::Execute()
 {
   // Load initial state — all unchecked
@@ -2281,7 +2313,7 @@ bool TCleanupDialog::Execute()
   }
   UpdateControls();
 
-  const bool Result = (ShowModal() == brOK);
+  const bool Result = (ShowModal() == brOK) && ConfirmCleanup();
   if (Result)
   {
     int32_t Completed = 0;

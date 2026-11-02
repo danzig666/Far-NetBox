@@ -1,3 +1,10 @@
+## [Unreleased]
+
+ * Fix sessions stored under old key names (for example with a literal space) that could not be deleted
+ * Fix Cleanup dialog ignoring settings stored in the Far plugin database
+ * Ask for confirmation before Cleanup deletes data, listing what will be lost
+ * Fix saving a session stored under an old key name creating a duplicate key
+ * Fix check for existing subkeys in Far plugin settings
 ## [26.7.3.617] - 2026-07-24
 
  * Fix FTP session hang at "Starting the session..."
