@@ -84,10 +84,21 @@ bool TFar3Storage::DoDeleteSubKey(const UnicodeString & SubKey)
     K = GetFullCurrentSubKey();
     FRoot = FPluginSettings.OpenSubKey(FRoot, K.c_str());
   }
-  const size_t Root = FPluginSettings.OpenSubKey(FRoot, MungeKeyName(SubKey).c_str());
-  if (Root != 0)
+  // OpenSubKey also accepts ANSI-munged and raw (written by old versions) key names.
+  // Delete all of them, otherwise the key would be listed again by the next load.
+  const UnicodeString MungedKey = MungeKeyName(SubKey);
+  const UnicodeString AnsiMungedKey = PuttyMungeStr(SubKey);
+  for (const UnicodeString & Name : {MungedKey, AnsiMungedKey, SubKey})
   {
-    Result = FPluginSettings.DeleteSubKey(Root);
+    // Raw "a%20b" is key of session "a b", it must not be deleted along with session "a%20b"
+    if ((Name == MungedKey) || (PuttyUnMungeStr(Name) == SubKey))
+    {
+      const size_t Root = FPluginSettings.OpenSubKey(FRoot, Name.c_str());
+      if (Root != 0)
+      {
+        Result = FPluginSettings.DeleteSubKey(Root) || Result;
+      }
+    }
   }
   return Result;
 }
